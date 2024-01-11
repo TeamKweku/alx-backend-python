@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-
 from typing import Union, Tuple
 
 
@@ -17,5 +15,5 @@ def to_kv(k: str, v: Union[int, float]) -> Tuple[str, float]:
         Tuple[str, float]: A tuple containing the string k and
         the square of v as a float.
     """
-    
-    return (k, v**2)
+    squared_value = float(v) ** 2
+    return (k, squared_value)
