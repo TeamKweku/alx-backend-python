@@ -21,3 +21,4 @@ def safe_first_element(lst: Sequence[Any]) -> Optional[Any]:
         return lst[0]
     else:
         return None
+    
