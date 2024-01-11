@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""module that implements a function that takes both
+str and int or float and returns a tuple"""
 from typing import Union, Tuple
 
 
