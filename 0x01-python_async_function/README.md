@@ -20,7 +20,7 @@
    print(asyncio.run(wait_random(15)))
    ```
 
-2. [Concurrent Coroutines](0x01-python_async_function/1-concurrent_coroutines.py)
+2. [Concurrent Coroutines](1-concurrent_coroutines.py)
 
    - An async routine that spawns wait_random n times with the specified max_delay.
    - Returns a list of all the delays (float values) in ascending order.
@@ -37,7 +37,7 @@
    print(asyncio.run(wait_n(10, 0)))
    ```
 
-3. [Measure Runtime](0x01-python_async_function/2-measure_runtime.py)
+3. [Measure Runtime](2-measure_runtime.py)
 
    - Measures the total execution time for wait_n(n, max_delay) and returns total_time / n.
 
@@ -52,7 +52,7 @@
    print(measure_time(n, max_delay))
    ```
 
-4. [Asyncio Tasks](0x01-python_async_function/3-tasks.py)
+4. [Asyncio Tasks](3-tasks.py)
 
    - Function `task_wait_random` that returns an asyncio.Task for wait_random.
 
@@ -71,7 +71,7 @@
    asyncio.run(test(5))
    ```
 
-5. [Asyncio Task Wait N](0x01-python_async_function/4-tasks.py)
+5. [Asyncio Task Wait N](4-tasks.py)
 
    - Function `task_wait_n` that uses `task_wait_random` to spawn tasks for wait_random.
 
