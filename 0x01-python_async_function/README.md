@@ -4,7 +4,7 @@
 
 ## Contents
 
-1. [Basic Asynchronous Syntax](0x01-python_async_function/0-basic_async_syntax.py)
+1. [Basic Asynchronous Syntax](0-basic_async_syntax.py)
 
    - An asynchronous coroutine that waits for a random delay between 0 and max_delay seconds.
 
