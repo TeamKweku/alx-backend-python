@@ -59,7 +59,7 @@ def create_table(connection: mysql.connector.MySQLConnection) -> None:
             CREATE TABLE IF NOT EXISTS user_data (
                 user_id VARCHAR(36) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
                 age DECIMAL NOT NULL,
                 INDEX idx_user_id (user_id)
             )
@@ -89,7 +89,7 @@ def insert_data(connection: mysql.connector.MySQLConnection, data: str) -> None:
                 # Check if record already exists
                 cursor.execute(
                     "SELECT user_id FROM user_data WHERE user_id = %s",
-                    (user_id,),
+                    (row["email"],),
                 )
                 if not cursor.fetchone():
                     cursor.execute(

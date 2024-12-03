@@ -33,3 +33,4 @@ def stream_users():
             cursor.close()
         if connection:
             connection.close()
+            
