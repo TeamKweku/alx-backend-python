@@ -2,6 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message
 from .serializers import (
@@ -17,6 +19,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated]
     queryset = Conversation.objects.all()
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['created_at']
+    search_fields = ['participants_id__email', 'participants_id__first_name']
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -26,11 +33,6 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter conversations to only those the user participates in."""
         return self.queryset.filter(participants_id=self.request.user)
-    
-    def get_serializer_context(self):
-        """Add request to serializer context."""
-        context = super().get_serializer_context()
-        return context
     
     def perform_create(self, serializer):
         """Create a new conversation and add initial message if provided."""
@@ -69,6 +71,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated]
     queryset = Message.objects.all()
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['conversation', 'sent_at']
+    search_fields = ['message_body', 'sender_id__email']
+    ordering_fields = ['sent_at']
+    ordering = ['sent_at']
     
     def get_serializer_class(self):
         if self.action == 'create':
