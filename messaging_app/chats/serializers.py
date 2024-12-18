@@ -84,6 +84,22 @@ class ConversationCreateSerializer(serializers.ModelSerializer):
             })
         return data
     
+    def create(self, validated_data):
+        initial_message = validated_data.pop('initial_message', None)
+        participants = validated_data.pop('participants_id')
+        
+        conversation = Conversation.objects.create(**validated_data)
+        conversation.participants_id.set(participants)
+        
+        if initial_message:
+            Message.objects.create(
+                sender_id=self.context['request'].user,
+                conversation=conversation,
+                message_body=initial_message
+            )
+        
+        return conversation
+    
     class Meta:
         model = Conversation
         fields = ('conversation_id', 'participants_id', 'initial_message')
