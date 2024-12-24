@@ -13,6 +13,7 @@ from .serializers import (
     MessageCreateSerializer
 )
 from .permissions import IsParticipantOfConversation, IsOwnerOrReadOnly
+from .filters import MessageFilter
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
@@ -73,7 +74,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsParticipantOfConversation, IsOwnerOrReadOnly]
     queryset = Message.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['conversation', 'sent_at']
+    filterset_class = MessageFilter
     search_fields = ['message_body', 'sender_id__email']
     ordering_fields = ['sent_at']
     ordering = ['sent_at']
@@ -85,14 +86,9 @@ class MessageViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Filter messages to only those in conversations the user participates in."""
-        conversation_id = self.request.query_params.get('conversation_id')
         queryset = self.queryset.filter(
             conversation__participants_id=self.request.user
         )
-        
-        if conversation_id:
-            queryset = queryset.filter(conversation_id=conversation_id)
-        
         return queryset.order_by('sent_at')
     
     def perform_create(self, serializer):
