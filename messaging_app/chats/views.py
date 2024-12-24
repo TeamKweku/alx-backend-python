@@ -12,12 +12,13 @@ from .serializers import (
     MessageSerializer,
     MessageCreateSerializer
 )
+from .permissions import IsParticipantOfConversation, IsOwnerOrReadOnly
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
     ViewSet for viewing and editing conversations.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     queryset = Conversation.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['created_at']
@@ -69,7 +70,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for viewing and sending messages.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation, IsOwnerOrReadOnly]
     queryset = Message.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['conversation', 'sent_at']
