@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.http import HttpResponseForbidden
 from collections import defaultdict
+from django.urls import resolve
 
 
 class RequestLoggingMiddleware:
@@ -75,3 +76,41 @@ class OffensiveLanguageMiddleware:
         if x_forwarded_for:
             return x_forwarded_for.split(",")[0]
         return request.META.get("REMOTE_ADDR")
+
+
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # Define admin-only URL patterns
+        self.admin_only_urls = [
+            "user-list",  # Example URL name for user management
+            "user-detail",
+            "message-delete",
+            "chat-delete",
+        ]
+
+    def __call__(self, request):
+        # Skip permission check for unauthenticated users (they'll be handled by auth middleware)
+        if not request.user.is_authenticated:
+            return self.get_response(request)
+
+        # Get the URL name for the current request
+        try:
+            url_name = resolve(request.path_info).url_name
+        except:
+            url_name = None
+
+        # Check if the current URL requires admin privileges
+        if url_name in self.admin_only_urls:
+            # Check if user is admin or moderator
+            if not (
+                request.user.is_staff
+                or request.user.is_superuser
+                or getattr(request.user, "is_moderator", False)
+            ):
+                return HttpResponseForbidden(
+                    "Access denied. This action requires admin or moderator privileges."
+                )
+
+        response = self.get_response(request)
+        return response
