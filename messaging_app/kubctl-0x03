@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Ensure script exits on error
+set -e
+
+# Function to test application availability
+test_availability() {
+    local url="http://localhost:8000/api"
+    local count=0
+    local failures=0
+    
+    while true; do
+        count=$((count + 1))
+        if ! curl -s -f "$url" > /dev/null; then
+            failures=$((failures + 1))
+            echo "Request $count failed. Total failures: $failures"
+        else
+            echo "Request $count succeeded"
+        fi
+        sleep 1
+    done
+}
+
+echo "Starting availability test in background..."
+test_availability &
+TEST_PID=$!
+
+echo "Current deployment status before update:"
+kubectl get pods -l app=messaging-app
+
+echo -e "\nApplying rolling update..."
+kubectl apply -f blue_deployment.yaml
+
+echo -e "\nMonitoring rollout status..."
+kubectl rollout status deployment/messaging-app-blue
+
+echo -e "\nVerifying pods after update:"
+kubectl get pods -l app=messaging-app
+
+echo -e "\nChecking rollout history:"
+kubectl rollout history deployment/messaging-app-blue
+
+# Kill the background test process
+kill $TEST_PID
+
+echo -e "\nRolling update complete!"
+echo "To rollback if needed, run: kubectl rollout undo deployment/messaging-app-blue" 
