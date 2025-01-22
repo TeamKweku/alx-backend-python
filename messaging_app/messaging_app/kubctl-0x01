@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Ensure script exits on error
+set -e
+
+echo "Scaling Django app deployment to 3 replicas..."
+kubectl scale deployment messaging-app --replicas=3
+
+echo -e "\nWaiting for pods to be ready..."
+sleep 10  # Give some time for pods to start
+
+echo -e "\nVerifying pods status:"
+kubectl get pods -l app=messaging-app
+
+echo -e "\nEnabling metrics server for monitoring..."
+minikube addons enable metrics-server
+sleep 30  # Wait for metrics server to be ready
+
+echo -e "\nPerforming load test using wrk..."
+# Get the service URL using minikube
+SERVICE_URL=$(minikube service messaging-app-service --url)
+wrk -t12 -c400 -d30s $SERVICE_URL
+
+echo -e "\nMonitoring resource usage..."
+echo "Pod Resource Usage:"
+kubectl top pods -l app=messaging-app
+
+echo -e "\nNode Resource Usage:"
+kubectl top nodes 
