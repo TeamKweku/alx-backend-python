@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Ensure the script exits on any error
+set -e
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Install minikube if not found
+if ! command_exists minikube; then
+    echo "Installing minikube..."
+    curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    sudo install minikube-linux-amd64 /usr/local/bin/minikube
+    rm minikube-linux-amd64
+    echo "minikube installed successfully!"
+else
+    echo "minikube is already installed"
+fi
+
+# Install kubectl if not found
+if ! command_exists kubectl; then
+    echo "Installing kubectl..."
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    sudo install kubectl /usr/local/bin/kubectl
+    rm kubectl
+    echo "kubectl installed successfully!"
+else
+    echo "kubectl is already installed"
+fi
+
+# Start minikube cluster with Docker driver
+echo "Starting Kubernetes cluster..."
+minikube start --driver=docker
+
+# Verify cluster status
+echo "Cluster status:"
+kubectl cluster-info
+
+# Get all pods in all namespaces
+echo "Available pods:"
+kubectl get pods -A
