@@ -50,7 +50,9 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
 ]
 
-LOCAL_APPS = ["chats"]
+LOCAL_APPS = [
+    "chats",  # Update the path to reflect new structure
+]
 
 # Add this line to combine all apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -92,11 +94,25 @@ WSGI_APPLICATION = "messaging_app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("MYSQL_DATABASE", "messaging_db"),
-        "USER": os.environ.get("MYSQL_USER", "messaging_user"),
-        "PASSWORD": os.environ.get("MYSQL_PASSWORD", "messaging_password"),
-        "HOST": os.environ.get("MYSQL_HOST", "db"),
-        "PORT": os.environ.get("MYSQL_PORT", "3306"),
+        "NAME": os.environ.get(
+            "MYSQL_DATABASE",
+        ),
+        "USER": os.environ.get(
+            "MYSQL_USER",
+        ),
+        "PASSWORD": os.environ.get(
+            "MYSQL_PASSWORD",
+        ),
+        "HOST": os.environ.get(
+            "MYSQL_HOST",
+        ),
+        "PORT": os.environ.get(
+            "MYSQL_PORT",
+        ),
+        "OPTIONS": {
+            "init_command": "SET default_storage_engine=InnoDB",
+            "charset": "utf8mb4",
+        },
     }
 }
 
@@ -133,9 +149,12 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-STATIC_URL = "static/"
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
