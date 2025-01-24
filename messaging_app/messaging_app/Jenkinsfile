@@ -1,0 +1,93 @@
+pipeline {
+    agent any
+
+    environment {
+        // Python environment variables
+        PYTHON_VERSION = '3.10'
+        VENV_NAME = 'venv'
+        // GitHub credentials ID (configured in Jenkins)
+        GITHUB_CREDENTIALS = 'github-credentials'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clean workspace before checkout
+                cleanWs()
+                // Checkout code from GitHub
+                git branch: 'main',
+                    credentialsId: "${GITHUB_CREDENTIALS}",
+                    url: 'https://github.com/yourusername/alx-backend-python.git'
+            }
+        }
+
+        stage('Setup Python Environment') {
+            steps {
+                // Create and activate virtual environment
+                sh """
+                    python${PYTHON_VERSION} -m venv ${VENV_NAME}
+                    . ${VENV_NAME}/bin/activate
+                    python -m pip install --upgrade pip
+                    pip install -r messaging_app/requirements.txt
+                    pip install pytest pytest-django pytest-cov
+                """
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Run tests with pytest and generate coverage report
+                sh """
+                    . ${VENV_NAME}/bin/activate
+                    cd messaging_app
+                    pytest --junitxml=test-results/junit.xml \
+                          --cov=. \
+                          --cov-report=xml:coverage.xml \
+                          --cov-report=html:coverage_html
+                """
+            }
+            post {
+                always {
+                    // Archive test results and coverage reports
+                    junit 'messaging_app/test-results/junit.xml'
+                    cobertura coberturaReportFile: 'messaging_app/coverage.xml'
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'messaging_app/coverage_html',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Code Quality') {
+            steps {
+                // Run pylint for code quality checks
+                sh """
+                    . ${VENV_NAME}/bin/activate
+                    pip install pylint
+                    cd messaging_app
+                    pylint --output-format=parseable --reports=yes . > pylint-report.txt || true
+                """
+                // Archive pylint report
+                archiveArtifacts artifacts: 'messaging_app/pylint-report.txt'
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up workspace
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+} 
