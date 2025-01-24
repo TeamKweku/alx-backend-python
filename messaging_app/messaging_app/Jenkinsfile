@@ -9,7 +9,7 @@ pipeline {
         GITHUB_CREDENTIALS = 'github-credentials'
         // Docker Hub credentials and image info
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        DOCKER_IMAGE = 'yourdockerhub/messaging-app'
+        DOCKER_IMAGE = 'teamkweku/messaging-app'
         DOCKER_TAG = 'latest'
     }
 
