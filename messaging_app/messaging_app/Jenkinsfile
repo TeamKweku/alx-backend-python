@@ -7,6 +7,10 @@ pipeline {
         VENV_NAME = 'venv'
         // GitHub credentials ID (configured in Jenkins)
         GITHUB_CREDENTIALS = 'github-credentials'
+        // Docker Hub credentials and image info
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_IMAGE = 'yourdockerhub/messaging-app'
+        DOCKER_TAG = 'latest'
     }
 
     stages {
@@ -74,6 +78,39 @@ pipeline {
                 """
                 // Archive pylint report
                 archiveArtifacts artifacts: 'messaging_app/pylint-report.txt'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh """
+                        cd messaging_app
+                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    """
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Login to Docker Hub
+                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                    
+                    // Push Docker image
+                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    
+                    // Clean up - remove local image
+                    sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+            }
+            post {
+                always {
+                    // Logout from Docker Hub
+                    sh 'docker logout'
+                }
             }
         }
     }
